@@ -337,9 +337,9 @@ Answer:"""
                 all_text = ""
                 doc_stats = []
 
-                #PRocess uploaded files
+                #Process uploaded files
                 if uploaded_files:
-                    progress = st..progress(0, "PRocessing files...")
+                    progress = st.progress(0, "Processing files...")
     
                     for i, file in enumerate(uploaded_files):
                         try:
