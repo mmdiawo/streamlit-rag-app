@@ -318,29 +318,29 @@ Answer:"""
                 help="Upload one or more documents"
                 )
 
-                #Paste text
-                pasted_text = st.text_area(
-                    "Or paste text directly",
-                    height=120,
-                    placeholder="Paste content here..."
-                )
+            #Paste text
+            pasted_text = st.text_area(
+                "Or paste text directly",
+                height=120,
+                placeholder="Paste content here..."
+            )
 
-                #Advanced settings
-                with st.expander("Advanced Settings"):
-                    chunk_size = st.slider("Chunk size (words)", 100, 1000, CHUNK_SIZE, 50)
-                    chunk_overlap = st.slider("Chunk overlap (words)", 0, 200, CHUNK_OVERLAP, 10)
-                    top_k = st.slider("Results to retrieve", 1, 10, 3)
+            #Advanced settings
+            with st.expander("Advanced Settings"):
+                chunk_size = st.slider("Chunk size (words)", 100, 1000, CHUNK_SIZE, 50)
+                chunk_overlap = st.slider("Chunk overlap (words)", 0, 200, CHUNK_OVERLAP, 10)
+                top_k = st.slider("Results to retrieve", 1, 10, 3)
 
                 
-                #Process button
-                if st.button ("Process Documents", type="primary", disabled=not api_key):
-                    all_text = ""
-                    doc_stats = []
+            #Process button
+            if st.button ("Process Documents", type="primary", disabled=not api_key):
+                all_text = ""
+                doc_stats = []
 
                 #PRocess uploaded files
                 if uploaded_files:
                     progress = st..progress(0, "PRocessing files...")
-
+    
                     for i, file in enumerate(uploaded_files):
                         try:
                             content, file_type = read_file(file)
