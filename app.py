@@ -157,8 +157,8 @@ def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVE
     words = text.split()
     chunks = []
 
-    for i in range(0, len(words), chunk_size = overlap):
-        chunk = ' '.join(words[i:i + chunk_aize])
+    for i in range(0, len(words), chunk_size - overlap):
+        chunk = ' '.join(words[i:i + chunk_size])
         if chunk.strip():
             chunks.append(chunk)
 
@@ -178,7 +178,7 @@ def get_embeddings(texts: list[str], api_key: str) -> np.ndarray:
         batch = texts[i:i + batch_size]
         response = client.embeddings.create(
             model=EMBEDDING_MODEL,
-            inout=batch
+            input=batch
         )
         embeddings = [item.embedding for item in response.data]
         all_embeddings.extend(embeddings)
@@ -208,7 +208,7 @@ def search_similar(query: str, index: faiss.IndexFlatL2, chunks: list[str], api_
 
 def generate_answer(query: str, context_chunks: list[str], api_key: str) -> str:
     """Generate answer using OPENAI chat completion with retrieved context."""
-    client = openai.OPENAI(api_key=api_key)
+    client = openai.OpenAI(api_key=api_key)
 
     context = "\n\n---\n\n".join(context_chunks)
 
@@ -251,7 +251,6 @@ Answer:"""
     def main():
         st.set_page_config(
             page_title="RAG Q&A System",
-            page_icon="",
             layout="wide"
         )
 
@@ -260,7 +259,7 @@ Answer:"""
 
         #Initialize session state
         if "chunks" not in st.session_state:
-            st.session_State.chunks = []
+            st.session_state.chunks = []
         if "index" not in st.session_state:
             st.session_state.index = None
         if "chat_history" not in st.session_state:
@@ -348,7 +347,8 @@ Answer:"""
                             all_text += f"\n\n--- Document: {file.name} ---\n\n{content}"
                             doc_stats.append({
                                 "name": file.name,
-                                "type": word_count
+                                "words": word_count,
+                                "type": file_type
                             })
                             progress.progress((i + 1) / len(uploaded_files), f"Processed {file.name}")
                         except Exception as e:
@@ -371,14 +371,14 @@ Answer:"""
                     with st.spinner("creating embeddings and index..."):
                         try:
                             #Chunk the text
-                            chunks = chunk_text(all_text, chunk_size, chunk_oberlap)
+                            chunks = chunk_text(all_text, chunk_size, chunk_overlap)
                             st.session_state.chunks = chunks
 
 
                             #Create embeddings and index
                             embeddings = get_embeddings(chunks, api_key)
                             st.session_state.index = create_faiss_index(embeddings)
-                            st_session_state.documents_loaded = True
+                            st.session_state.documents_loaded = True
                             st.session_state.doc_stats = doc_stats
                             st.session_state.top_k = top_k
 
@@ -498,5 +498,7 @@ Answer:"""
                     except Exception as e:
                         st.error(f"Error: {str(e)}")
 
-st.write("App loaded successfully")
+
+if __name__ == "__main__":
+    main()
         
