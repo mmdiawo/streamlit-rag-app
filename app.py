@@ -316,7 +316,7 @@ Answer:"""
                 type=SUPPORTED_TYPES,
                 accept_multiple_files=True,
                 help="Upload one or more documents"
-                )
+            )
 
             #Paste text
             pasted_text = st.text_area(
@@ -499,6 +499,5 @@ Answer:"""
                         st.error(f"Error: {str(e)}")
 
                 
-if __name__ == "__main__":
-    main()
+exec python -m streamlit run app.py --server.port=8501 --server. Address=0.0.0.0
         
