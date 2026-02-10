@@ -499,5 +499,5 @@ Answer:"""
                         st.error(f"Error: {str(e)}")
 
                 
-exec python -m streamlit run app.py --server.port=8501 --server. Address=0.0.0.0
+streamlit run app.py --server.port=8501 --server. Address=0.0.0.0
         
