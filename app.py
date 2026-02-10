@@ -251,10 +251,11 @@ Answer:"""
 def main():
 	st.set_page_config(
 		page_title="RAG Q&A System",
+		page_icon="📘",
 		layout="wide"
 	)
 
-	st.title("RAG Document Q&A System")
+	st.title("📘 RAG Document Q&A System")
 	st.markdown("*Upload documents, ask questions, get AI-powered answers*")
 
 	#Initialize session state
@@ -278,9 +279,9 @@ def main():
 		api_key = get_api_key()
 
 		if api_key:
-			st.success("API Key loaded")
+			st.success("✅ API Key loaded")
 		else:
-			st.error("API Key not found")
+			st.error("❌ API Key not found")
 			st.markdown("""
 			**Setup required:**
 			
@@ -293,7 +294,7 @@ def main():
 		st.divider()
 
 		#document upload section
-		st.header("Add documents")
+		st.header("📄 Add documents")
 
 		#Show supported formats
 		with st.expander("Supported formats"):
@@ -332,7 +333,7 @@ def main():
 
 			
 		#Process button
-		if st.button ("Process Documents", type="primary", disabled=not api_key):
+		if st.button ("🔄 Process Documents", type="primary", disabled=not api_key):
 			all_text = ""
 			doc_stats = []
 
@@ -382,7 +383,7 @@ def main():
 						st.session_state.doc_stats = doc_stats
 						st.session_state.top_k = top_k
 
-						st.success(f" Processed {len(chunks)} chunks!")
+						st.success(f"✅ Processed {len(chunks)} chunks!")
 
 					except Exception as e:
 						st.error(f"Error: {str(e)}")
@@ -394,7 +395,7 @@ def main():
 		#Show loaded documents
 		if st.session_state.documents_loaded:
 			st.divider()
-			st.subheader("loaded Documents")
+			st.subheader("📊 loaded Documents")
 
 			for doc in st.session_state.doc_stats:
 				st.markdown(f"**{doc['name']}** \n{doc['type']} • {doc['words']:,} words")
@@ -404,7 +405,7 @@ def main():
 		#Clear button
 		if st.session_state.documents_loaded:
 			st.divider()
-			if st.button("Clear All"):
+			if st.button("🗑️ Clear All"):
 				st.session_state.chunks = []
 				st.session_state.index = None
 				st.session_state.chat_history = []
@@ -433,11 +434,11 @@ def main():
 			5. **Generate** - Relevant chunks are sent to GPT to generate accurate answers
 			
 			**Supported documemts types:**
-			- PDF documents
-			- Word documents (.docx)
-			- Spreadsheets (CSV, Excel)
-			- HTML files
-			- Text and Markdown files
+			- 📄 PDF documents
+			- 📝 Word documents (.docx)
+			- 📊 Spreadsheets (CSV, Excel)
+			- 🌐 HTML files
+			- 📑 Text and Markdown files
 			""")
 		return
 
