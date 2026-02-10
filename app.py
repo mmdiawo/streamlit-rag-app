@@ -497,7 +497,4 @@ Answer:"""
 
                     except Exception as e:
                         st.error(f"Error: {str(e)}")
-
-                
-streamlit run app.py --server.port=8501 --server. Address=0.0.0.0
         
