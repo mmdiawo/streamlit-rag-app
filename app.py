@@ -497,4 +497,6 @@ Answer:"""
 
                     except Exception as e:
                         st.error(f"Error: {str(e)}")
+
+web: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
         
