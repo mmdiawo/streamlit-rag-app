@@ -248,255 +248,255 @@ Answer:"""
     #Streamlit
 
 
-    def main():
-        st.set_page_config(
-            page_title="RAG Q&A System",
-            layout="wide"
-        )
+def main():
+	st.set_page_config(
+		page_title="RAG Q&A System",
+		layout="wide"
+	)
 
-        st.title("RAG Document Q&A System")
-        st.markdown("*Upload documents, ask questions, get AI-powered answers*")
+	st.title("RAG Document Q&A System")
+	st.markdown("*Upload documents, ask questions, get AI-powered answers*")
 
-        #Initialize session state
-        if "chunks" not in st.session_state:
-            st.session_state.chunks = []
-        if "index" not in st.session_state:
-            st.session_state.index = None
-        if "chat_history" not in st.session_state:
-            st.session_state.chat_history = []
-        if "documents_loaded" not in st.session_state:
-            st.session_state.documents_loaded = False
-        if "doc_stats" not in st.session_state:
-            st.session_state.doc_stats = []
+	#Initialize session state
+	if "chunks" not in st.session_state:
+		st.session_state.chunks = []
+	if "index" not in st.session_state:
+		st.session_state.index = None
+	if "chat_history" not in st.session_state:
+		st.session_state.chat_history = []
+	if "documents_loaded" not in st.session_state:
+		st.session_state.documents_loaded = False
+	if "doc_stats" not in st.session_state:
+		st.session_state.doc_stats = []
 
-        
-        #Sidebar config
-        with st.sidebar:
-            st.header("Configuration")
+	
+	#Sidebar config
+	with st.sidebar:
+		st.header("Configuration")
 
-            #Get API Key from secrets
-            api_key = get_api_key()
+		#Get API Key from secrets
+		api_key = get_api_key()
 
-            if api_key:
-                st.success("API Key loaded")
-            else:
-                st.error("API Key not found")
-                st.markdown("""
-                **Setup required:**
-                
-                Create `.streamlit/secrets.toml`:
-                ```toml
-                OPENAI_API_KEY = "sk-your-key-here"
-                ```
-                """)
+		if api_key:
+			st.success("API Key loaded")
+		else:
+			st.error("API Key not found")
+			st.markdown("""
+			**Setup required:**
+			
+			Create `.streamlit/secrets.toml`:
+			```toml
+			OPENAI_API_KEY = "sk-your-key-here"
+			```
+			""")
 
-            st.divider()
+		st.divider()
 
-            #document upload section
-            st.header("Add documents")
+		#document upload section
+		st.header("Add documents")
 
-            #Show supported formats
-            with st.expander("Supported formats"):
-                st.markdown("""
-                | Format | Extension |
-                |--------| ----------|
-                | Plain Text | `.txt`|
-                |Markdown | `.md` |
-                | PDF | `.pdf` |
-                |Word | `.docx` |
-                | CSV | `.csv` |
-                | Excel | `.xlsx` |
-                | HTML | `.html` |
-                """)
+		#Show supported formats
+		with st.expander("Supported formats"):
+			st.markdown("""
+			| Format | Extension |
+			|--------| ----------|
+			| Plain Text | `.txt`|
+			|Markdown | `.md` |
+			| PDF | `.pdf` |
+			|Word | `.docx` |
+			| CSV | `.csv` |
+			| Excel | `.xlsx` |
+			| HTML | `.html` |
+			""")
 
-            #File upload
-            uploaded_files = st.file_uploader(
-                "Upload files",
-                type=SUPPORTED_TYPES,
-                accept_multiple_files=True,
-                help="Upload one or more documents"
-            )
+		#File upload
+		uploaded_files = st.file_uploader(
+			"Upload files",
+			type=SUPPORTED_TYPES,
+			accept_multiple_files=True,
+			help="Upload one or more documents"
+		)
 
-            #Paste text
-            pasted_text = st.text_area(
-                "Or paste text directly",
-                height=120,
-                placeholder="Paste content here..."
-            )
+		#Paste text
+		pasted_text = st.text_area(
+			"Or paste text directly",
+			height=120,
+			placeholder="Paste content here..."
+		)
 
-            #Advanced settings
-            with st.expander("Advanced Settings"):
-                chunk_size = st.slider("Chunk size (words)", 100, 1000, CHUNK_SIZE, 50)
-                chunk_overlap = st.slider("Chunk overlap (words)", 0, 200, CHUNK_OVERLAP, 10)
-                top_k = st.slider("Results to retrieve", 1, 10, 3)
+		#Advanced settings
+		with st.expander("Advanced Settings"):
+			chunk_size = st.slider("Chunk size (words)", 100, 1000, CHUNK_SIZE, 50)
+			chunk_overlap = st.slider("Chunk overlap (words)", 0, 200, CHUNK_OVERLAP, 10)
+			top_k = st.slider("Results to retrieve", 1, 10, 3)
 
-                
-            #Process button
-            if st.button ("Process Documents", type="primary", disabled=not api_key):
-                all_text = ""
-                doc_stats = []
+			
+		#Process button
+		if st.button ("Process Documents", type="primary", disabled=not api_key):
+			all_text = ""
+			doc_stats = []
 
-                #Process uploaded files
-                if uploaded_files:
-                    progress = st.progress(0, "Processing files...")
-    
-                    for i, file in enumerate(uploaded_files):
-                        try:
-                            content, file_type = read_file(file)
-                            word_count = len(content.split())
-                            all_text += f"\n\n--- Document: {file.name} ---\n\n{content}"
-                            doc_stats.append({
-                                "name": file.name,
-                                "words": word_count,
-                                "type": file_type
-                            })
-                            progress.progress((i + 1) / len(uploaded_files), f"Processed {file.name}")
-                        except Exception as e:
-                            st.error(f"Error reading {file.name}: {str(e)}")
-                    
-                    progress.empty()
-                
+			#Process uploaded files
+			if uploaded_files:
+				progress = st.progress(0, "Processing files...")
 
-                #Add pasted text
-                if pasted_text.strip():
-                    all_text += f"\n\n--- Pasted Text ---\n\n{pasted_text}"
-                    doc_stats.append({
-                        "name": "Pasted text",
-                        "type": "Text",
-                        "words": len(pasted_text.split())
-                    })
+				for i, file in enumerate(uploaded_files):
+					try:
+						content, file_type = read_file(file)
+						word_count = len(content.split())
+						all_text += f"\n\n--- Document: {file.name} ---\n\n{content}"
+						doc_stats.append({
+							"name": file.name,
+							"words": word_count,
+							"type": file_type
+						})
+						progress.progress((i + 1) / len(uploaded_files), f"Processed {file.name}")
+					except Exception as e:
+						st.error(f"Error reading {file.name}: {str(e)}")
+				
+				progress.empty()
+			
 
-
-                if all_text.strip():
-                    with st.spinner("creating embeddings and index..."):
-                        try:
-                            #Chunk the text
-                            chunks = chunk_text(all_text, chunk_size, chunk_overlap)
-                            st.session_state.chunks = chunks
+			#Add pasted text
+			if pasted_text.strip():
+				all_text += f"\n\n--- Pasted Text ---\n\n{pasted_text}"
+				doc_stats.append({
+					"name": "Pasted text",
+					"type": "Text",
+					"words": len(pasted_text.split())
+				})
 
 
-                            #Create embeddings and index
-                            embeddings = get_embeddings(chunks, api_key)
-                            st.session_state.index = create_faiss_index(embeddings)
-                            st.session_state.documents_loaded = True
-                            st.session_state.doc_stats = doc_stats
-                            st.session_state.top_k = top_k
+			if all_text.strip():
+				with st.spinner("creating embeddings and index..."):
+					try:
+						#Chunk the text
+						chunks = chunk_text(all_text, chunk_size, chunk_overlap)
+						st.session_state.chunks = chunks
 
-                            st.success(f" Processed {len(chunks)} chunks!")
 
-                        except Exception as e:
-                            st.error(f"Error: {str(e)}")
+						#Create embeddings and index
+						embeddings = get_embeddings(chunks, api_key)
+						st.session_state.index = create_faiss_index(embeddings)
+						st.session_state.documents_loaded = True
+						st.session_state.doc_stats = doc_stats
+						st.session_state.top_k = top_k
 
-                else:
-                    st.warning("Please upload files or paste text")
+						st.success(f" Processed {len(chunks)} chunks!")
 
-                
-            #Show loaded documents
-            if st.session_state.documents_loaded:
-                st.divider()
-                st.subheader("loaded Documents")
+					except Exception as e:
+						st.error(f"Error: {str(e)}")
 
-                for doc in st.session_state.doc_stats:
-                    st.markdown(f"**{doc['name']}** \n{doc['type']} • {doc['words']:,} words")
+			else:
+				st.warning("Please upload files or paste text")
 
-                st.markdown(f"**Total chunks:** {len(st.session_state.chunks)}")
+			
+		#Show loaded documents
+		if st.session_state.documents_loaded:
+			st.divider()
+			st.subheader("loaded Documents")
 
-            #Clear button
-            if st.session_state.documents_loaded:
-                st.divider()
-                if st.button("Clear All"):
-                    st.session_state.chunks = []
-                    st.session_state.index = None
-                    st.session_state.chat_history = []
-                    st.session_state.documents_loaded = False
-                    st.session_state.doc_stats = []
-                    st.rerun()
+			for doc in st.session_state.doc_stats:
+				st.markdown(f"**{doc['name']}** \n{doc['type']} • {doc['words']:,} words")
 
-        #Main chat interface
+			st.markdown(f"**Total chunks:** {len(st.session_state.chunks)}")
 
-        if not api_key:
-            st.warning("OpenAI key not configured. See sidebar for setup instructions")
-            return
+		#Clear button
+		if st.session_state.documents_loaded:
+			st.divider()
+			if st.button("Clear All"):
+				st.session_state.chunks = []
+				st.session_state.index = None
+				st.session_state.chat_history = []
+				st.session_state.documents_loaded = False
+				st.session_state.doc_stats = []
+				st.rerun()
 
-        if not st.session_state.documents_loaded:
-            st.info("Upload documents in the sidebar, then click 'Process Documents'")
+	#Main chat interface
 
-            #Show example
-            with st.expander("How it works"):
-                st.markdown("""
-                **RAG (Retrieval-Augmented Generation) Process:**
-                
-                1. **Upload** - Add your documents (PDF, Word, Excel, CSV, Text, HTML)
-                2. **Process** - Documents are split into chunks and converted to embeddings
-                3. **Index** - Embeddings are stored in a FAISS vector index
-                4. **Query** - Your questions are matched against the documents chunks
-                5. **Generate** - Relevant chunks are sent to GPT to generate accurate answers
-                
-                **Supported documemts types:**
-                - PDF documents
-                - Word documents (.docx)
-                - Spreadsheets (CSV, Excel)
-                - HTML files
-                - Text and Markdown files
-                """)
-            return
+	if not api_key:
+		st.warning("OpenAI key not configured. See sidebar for setup instructions")
+		return
 
-        #Display chat history
-        for msg in st.session_state.chat_history:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
-                if "sources" in msg and msg ["sources"]:
-                    with st.expander("Sources"):
-                        for i, source in enumerate(msg["sources"], 1):
-                            st.markdown(f"**Chunk {i}:**")
-                            display_text = source[:500] + "..." if len(source) > 500 else source
-                            st.markdown(f"> {display_text}")
+	if not st.session_state.documents_loaded:
+		st.info("Upload documents in the sidebar, then click 'Process Documents'")
 
-        #Chat input
-        if query := st.chat_input("Ask a question about your documents..."):
-            #Add user message
-            st.session_state.chat_history.append({"role": "user", "content": query})
+		#Show example
+		with st.expander("How it works"):
+			st.markdown("""
+			**RAG (Retrieval-Augmented Generation) Process:**
+			
+			1. **Upload** - Add your documents (PDF, Word, Excel, CSV, Text, HTML)
+			2. **Process** - Documents are split into chunks and converted to embeddings
+			3. **Index** - Embeddings are stored in a FAISS vector index
+			4. **Query** - Your questions are matched against the documents chunks
+			5. **Generate** - Relevant chunks are sent to GPT to generate accurate answers
+			
+			**Supported documemts types:**
+			- PDF documents
+			- Word documents (.docx)
+			- Spreadsheets (CSV, Excel)
+			- HTML files
+			- Text and Markdown files
+			""")
+		return
 
-            with st.chat_message("user"):
-                st.markdown(query)
+	#Display chat history
+	for msg in st.session_state.chat_history:
+		with st.chat_message(msg["role"]):
+			st.markdown(msg["content"])
+			if "sources" in msg and msg ["sources"]:
+				with st.expander("Sources"):
+					for i, source in enumerate(msg["sources"], 1):
+						st.markdown(f"**Chunk {i}:**")
+						display_text = source[:500] + "..." if len(source) > 500 else source
+						st.markdown(f"> {display_text}")
 
-            #Generate response
-            with st.chat_message("assistant"):
-                with st.spinner("Searching and generating answer..."):
-                    try:
-                        #Get top_k from session or default
-                        top_k = st.session_state.get("top_k", 3)
+	#Chat input
+	if query := st.chat_input("Ask a question about your documents..."):
+		#Add user message
+		st.session_state.chat_history.append({"role": "user", "content": query})
 
-                        #Search for relevant chunks
-                        relevant_chunks = search_similar(
-                            query,
-                            st.session_state.index,
-                            st.session_state.chunks,
-                            api_key,
-                            top_k=top_k
-                        )
+		with st.chat_message("user"):
+			st.markdown(query)
 
-                        #Generate answer
-                        answer = generate_answer(query, relevant_chunks, api_key)
+		#Generate response
+		with st.chat_message("assistant"):
+			with st.spinner("Searching and generating answer..."):
+				try:
+					#Get top_k from session or default
+					top_k = st.session_state.get("top_k", 3)
 
-                        st.markdown(answer)
+					#Search for relevant chunks
+					relevant_chunks = search_similar(
+						query,
+						st.session_state.index,
+						st.session_state.chunks,
+						api_key,
+						top_k=top_k
+					)
 
-                        #Show sources
-                        with st.expander("Sources"):
-                            for i, source in enumerate(relevant_chunks, 1):
-                                st.markdown(f"**Chunk {i}:**")
-                                display_text = source[:500] + "..." if len(source) > 500 else source
-                                st.markdown(f"> {display_text}")
-                                
-                        #Save to history
-                        st.session_state.chat_history.append({
-                            "role": "assistant",
-                            "content": answer,
-                            "sources": relevant_chunks
-                        })
+					#Generate answer
+					answer = generate_answer(query, relevant_chunks, api_key)
 
-                    except Exception as e:
-                        st.error(f"Error: {str(e)}")
+					st.markdown(answer)
+
+					#Show sources
+					with st.expander("Sources"):
+						for i, source in enumerate(relevant_chunks, 1):
+							st.markdown(f"**Chunk {i}:**")
+							display_text = source[:500] + "..." if len(source) > 500 else source
+							st.markdown(f"> {display_text}")
+							
+					#Save to history
+					st.session_state.chat_history.append({
+						"role": "assistant",
+						"content": answer,
+						"sources": relevant_chunks
+					})
+
+				except Exception as e:
+					st.error(f"Error: {str(e)}")
 
 
 if __name__ == "__main__":
